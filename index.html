@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Inmobiliario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --gold: #ffe082;
+            --bg-dark: #0a0a0a;
+        }
+
+        #chat-window { 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            transform: translateY(30px) scale(0.95); 
+            opacity: 0; 
+            pointer-events: none;
+            position: fixed;
+            bottom: 110px; /* Ajustado para que no choque con el botón */
+            right: 30px;
+            z-index: 10001;
+        }
+        #chat-window.active { 
+            transform: translateY(0) scale(1); 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+
+        .bot-trigger {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10000;
+            animation: pulse-gold 2s infinite;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        .bot-trigger img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+        }
+
+        @keyframes pulse-gold {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 224, 130, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 224, 130, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 224, 130, 0); }
+        }
+
+        #chat-content::-webkit-scrollbar { width: 4px; }
+        #chat-content::-webkit-scrollbar-thumb { background: rgba(255, 224, 130, 0.3); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <button onclick="toggleChat()" class="bot-trigger">
+        <img src="https://i.imgur.com/FwSvlok.jpeg" alt="Asistente Inmobiliaria">
+    </button>
+
+    <div id="chat-window" class="w-[90vw] md:w-[350px] bg-[#111] rounded-[2rem] shadow-2xl border border-white/10 overflow-hidden">
+        <div class="bg-[#ffe082] p-5 text-black flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-xs uppercase tracking-tighter">Asistente Virtual</p>
+                    <p class="text-[8px] opacity-70 font-bold uppercase tracking-widest">Inmobiliaria Premium</p>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="hover:rotate-90 transition duration-300">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="chat-content" class="h-[350px] overflow-y-auto p-5 space-y-4 bg-[#0a0a0a]">
+            <div class="bg-white/5 p-4 rounded-2xl rounded-tl-none mr-8 text-slate-300 border border-white/5 text-xs">
+                ¡Hola! Bienvenido. 👋 Estoy aquí para asesorarte. **¿Podrías decirme tu nombre?**
+            </div>
+        </div>
+
+        <div id="chat-input-area" class="p-4 bg-[#111] border-t border-white/5 flex gap-2">
+            <input type="text" id="user-input" placeholder="Escribe aquí..." 
+                   class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:ring-1 focus:ring-[#ffe082] text-white text-xs">
+            <button onclick="handleStep()" class="bg-[#ffe082] text-black w-10 h-10 rounded-xl flex items-center justify-center shadow-lg hover:bg-yellow-200 transition">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let step = 1;
+        let userData = { nombre: '', interes: '' };
+        const phone = "584264014765";
+
+        function toggleChat() { 
+            const win = document.getElementById('chat-window');
+            win.classList.toggle('active'); 
+        }
+
+        function appendMsg(text, isUser = false) {
+            const content = document.getElementById('chat-content');
+            const msg = document.createElement('div');
+            
+            if (isUser) {
+                msg.className = "bg-[#ffe082] text-black p-3 rounded-2xl rounded-tr-none ml-8 text-xs ml-auto shadow-md font-semibold";
+            } else {
+                msg.className = "bg-white/5 text-slate-300 p-3 rounded-2xl rounded-tl-none mr-8 text-xs border border-white/5";
+            }
+            
+            msg.innerHTML = text;
+            content.appendChild(msg);
+            content.scrollTop = content.scrollHeight;
+        }
+
+        function handleStep() {
+            const input = document.getElementById('user-input');
+            const val = input.value.trim();
+            if(!val) return;
+            
+            appendMsg(val, true);
+            input.value = '';
+
+            setTimeout(() => {
+                if(step === 1) {
+                    userData.nombre = val;
+                    appendMsg(`Un placer, **${val}**. ¿Qué tipo de propiedad buscas hoy? (Casa, Apartamento, Local, Terreno)`);
+                    step = 2;
+                } else if(step === 2) {
+                    userData.interes = val;
+                    appendMsg(`Excelente elección. ¿Deseas que un asesor te envíe fotos y precios de **${val}** por WhatsApp?`);
+                    
+                    const options = `
+                        <div class="grid gap-2 mt-3">
+                            <button onclick="finalStep('Sí, por favor')" class="bg-white/10 border border-white/10 p-3 rounded-xl text-left hover:border-[#ffe082] transition font-bold text-[10px] uppercase text-white">✅ Sí, por favor</button>
+                            <button onclick="finalStep('Solo quiero ver el catálogo')" class="bg-white/10 border border-white/10 p-3 rounded-xl text-left hover:border-[#ffe082] transition font-bold text-[10px] uppercase text-white">📸 Ver Catálogo</button>
+                        </div>`;
+                    appendMsg(options);
+                    document.getElementById('chat-input-area').style.display = 'none';
+                }
+            }, 600);
+        }
+
+        function finalStep(respuesta) {
+            appendMsg(respuesta, true);
+            setTimeout(() => {
+                appendMsg("Perfecto. Te estoy conectando con nuestro equipo. ¡Gracias!");
+                
+                const message = encodeURIComponent(`Hola, soy ${userData.nombre}. Me interesa un(a) ${userData.interes}. ${respuesta}`);
+                const waLink = `https://wa.me/${phone}?text=${message}`;
+                
+                setTimeout(() => { 
+                    window.open(waLink, '_blank'); 
+                }, 1000);
+            }, 600);
+        }
+
+        // Event Listener seguro
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('user-input');
+            input.addEventListener('keypress', (e) => { 
+                if (e.key === 'Enter') handleStep(); 
+            });
+
+            // Auto-abrir después de 5 seg
+            setTimeout(() => { 
+                const win = document.getElementById('chat-window');
+                if(!win.classList.contains('active')) toggleChat(); 
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
